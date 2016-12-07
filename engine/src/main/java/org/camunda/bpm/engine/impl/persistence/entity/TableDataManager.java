@@ -16,10 +16,7 @@ package org.camunda.bpm.engine.impl.persistence.entity;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.ibatis.session.RowBounds;
 import org.camunda.bpm.engine.filter.Filter;
@@ -175,6 +172,20 @@ public class TableDataManager extends AbstractManager {
     tablePage.setFirstResult(firstResult);
 
     return tablePage;
+  }
+
+  public List<Class<? extends DbEntity>> getEntities(String tableName, boolean withPrefix) {
+    String databaseTablePrefix = getDbSqlSession().getDbSqlSessionFactory().getDatabaseTablePrefix();
+    List<Class<? extends DbEntity>> entities = new ArrayList<Class<? extends DbEntity>>();
+
+    Set<Class<? extends DbEntity>> entityClasses = persistentObjectToTableNameMap.keySet();
+    for (Class<? extends DbEntity> entityClass : entityClasses) {
+      String entityTableName = persistentObjectToTableNameMap.get(entityClass);
+      if ((databaseTablePrefix + entityTableName).equals(tableName)) {
+        entities.add(entityClass);
+      }
+    }
+    return entities;
   }
 
   public String getTableName(Class<?> entityClass, boolean withPrefix) {

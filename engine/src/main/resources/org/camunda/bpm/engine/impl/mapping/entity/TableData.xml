@@ -16,4 +16,8 @@
     </if>
   </select>
 
+  <select id="deleteTableData" parameterType="map" resultType="map">
+    DELETE FROM ${tableName}
+  </select>
+
 </mapper>

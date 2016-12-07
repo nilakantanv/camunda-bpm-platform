@@ -52,50 +52,50 @@ import org.camunda.bpm.engine.management.JobDefinition;
  */
 public class EntityTypeComparatorForModifications implements Comparator<Class<?>> {
 
-  protected static Map<Class<?>, Integer> typeOrder = new HashMap<Class<?>, Integer>();
+  public static final Map<Class<?>, Integer> TYPE_ORDER = new HashMap<Class<?>, Integer>();
 
   static {
 
     // 1
-    typeOrder.put(IncidentEntity.class, 1);
-    typeOrder.put(VariableInstanceEntity.class, 1);
-    typeOrder.put(IdentityLinkEntity.class, 1);
+    TYPE_ORDER.put(IncidentEntity.class, 1);
+    TYPE_ORDER.put(VariableInstanceEntity.class, 1);
+    TYPE_ORDER.put(IdentityLinkEntity.class, 1);
 
-    typeOrder.put(EventSubscriptionEntity.class, 1);
+    TYPE_ORDER.put(EventSubscriptionEntity.class, 1);
 
-    typeOrder.put(JobEntity.class, 1);
-    typeOrder.put(MessageEntity.class, 1);
-    typeOrder.put(TimerEntity.class, 1);
+    TYPE_ORDER.put(JobEntity.class, 1);
+    TYPE_ORDER.put(MessageEntity.class, 1);
+    TYPE_ORDER.put(TimerEntity.class, 1);
 
-    typeOrder.put(MembershipEntity.class, 1);
-    typeOrder.put(TenantMembershipEntity.class, 1);
+    TYPE_ORDER.put(MembershipEntity.class, 1);
+    TYPE_ORDER.put(TenantMembershipEntity.class, 1);
 
-    typeOrder.put(CaseSentryPartEntity.class, 1);
+    TYPE_ORDER.put(CaseSentryPartEntity.class, 1);
 
-    typeOrder.put(ExternalTaskEntity.class, 1);
-    typeOrder.put(Batch.class, 1);
+    TYPE_ORDER.put(ExternalTaskEntity.class, 1);
+    TYPE_ORDER.put(Batch.class, 1);
 
     // 2
-    typeOrder.put(TenantEntity.class, 2);
-    typeOrder.put(GroupEntity.class, 2);
-    typeOrder.put(UserEntity.class, 2);
-    typeOrder.put(ByteArrayEntity.class, 2);
-    typeOrder.put(TaskEntity.class, 2);
-    typeOrder.put(JobDefinition.class, 2);
+    TYPE_ORDER.put(TenantEntity.class, 2);
+    TYPE_ORDER.put(GroupEntity.class, 2);
+    TYPE_ORDER.put(UserEntity.class, 2);
+    TYPE_ORDER.put(ByteArrayEntity.class, 2);
+    TYPE_ORDER.put(TaskEntity.class, 2);
+    TYPE_ORDER.put(JobDefinition.class, 2);
 
     // 3
-    typeOrder.put(ExecutionEntity.class, 3);
-    typeOrder.put(CaseExecutionEntity.class, 3);
+    TYPE_ORDER.put(ExecutionEntity.class, 3);
+    TYPE_ORDER.put(CaseExecutionEntity.class, 3);
 
     // 4
-    typeOrder.put(ProcessDefinitionEntity.class, 4);
-    typeOrder.put(CaseDefinitionEntity.class, 4);
-    typeOrder.put(DecisionDefinitionEntity.class, 4);
-    typeOrder.put(DecisionRequirementsDefinitionEntity.class, 4);
-    typeOrder.put(ResourceEntity.class, 4);
+    TYPE_ORDER.put(ProcessDefinitionEntity.class, 4);
+    TYPE_ORDER.put(CaseDefinitionEntity.class, 4);
+    TYPE_ORDER.put(DecisionDefinitionEntity.class, 4);
+    TYPE_ORDER.put(DecisionRequirementsDefinitionEntity.class, 4);
+    TYPE_ORDER.put(ResourceEntity.class, 4);
 
     // 5
-    typeOrder.put(DeploymentEntity.class, 5);
+    TYPE_ORDER.put(DeploymentEntity.class, 5);
 
   }
 
@@ -105,8 +105,8 @@ public class EntityTypeComparatorForModifications implements Comparator<Class<?>
       return 0;
     }
 
-    Integer firstIndex = typeOrder.get(firstEntityType);
-    Integer secondIndex = typeOrder.get(secondEntityType);
+    Integer firstIndex = TYPE_ORDER.get(firstEntityType);
+    Integer secondIndex = TYPE_ORDER.get(secondEntityType);
 
     // unknown type happens before / after everything else
     if(firstIndex == null) {
