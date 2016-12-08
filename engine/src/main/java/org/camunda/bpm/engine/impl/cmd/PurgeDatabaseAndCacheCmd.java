@@ -29,6 +29,7 @@ import org.camunda.bpm.engine.impl.persistence.deploy.cache.CachePurgeResult;
 import org.camunda.bpm.engine.impl.persistence.deploy.cache.DeploymentCache;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,10 @@ public class PurgeDatabaseAndCacheCmd implements Command<PurgeReport>, Serializa
   protected static final String SELECT_TABLE_DATA = "selectTableData";
   protected static final String TABLE_NAME = "tableName";
   protected static final String EMPTY_STRING = "";
+
+  public static final List<String> TABLENAMES_EXCLUDED_FROM_DB_CLEAN_CHECK = Arrays.asList(
+    "ACT_GE_PROPERTY"
+  );
 
   @Override
   public PurgeReport execute(CommandContext commandContext) {
@@ -74,7 +79,7 @@ public class PurgeDatabaseAndCacheCmd implements Command<PurgeReport>, Serializa
     DatabasePurgeReport databasePurgeReport = new DatabasePurgeReport();
     for (String tableName : tablesNames) {
       String tableNameWithoutPrefix = tableName.replace(databaseTablePrefix, EMPTY_STRING);
-      if (!DbEntityManager.TABLENAMES_EXCLUDED_FROM_DB_CLEAN_CHECK.contains(tableNameWithoutPrefix)) {
+      if (!TABLENAMES_EXCLUDED_FROM_DB_CLEAN_CHECK.contains(tableNameWithoutPrefix)) {
 
         //check if data exists
         Map<String, String> param = new HashMap<String, String>();

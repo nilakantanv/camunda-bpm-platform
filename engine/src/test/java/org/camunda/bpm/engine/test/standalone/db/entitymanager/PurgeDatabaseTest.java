@@ -22,8 +22,11 @@ import org.camunda.bpm.engine.impl.management.DatabasePurgeReport;
 import org.camunda.bpm.engine.impl.management.PurgeReport;
 import org.camunda.bpm.engine.impl.persistence.deploy.cache.CachePurgeResult;
 import org.camunda.bpm.engine.repository.Deployment;
+import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.engine.test.ProcessEngineRule;
 import org.camunda.bpm.engine.test.util.ProvidedProcessEngineRule;
+import org.camunda.bpm.engine.variable.VariableMap;
+import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.junit.Rule;
@@ -40,7 +43,7 @@ public class PurgeDatabaseTest {
   public ProcessEngineRule engineRule = new ProvidedProcessEngineRule();
 
   @Test
-  public void clearTest() {
+  public void testPurge() {
     //given data
     BpmnModelInstance test = Bpmn.createExecutableProcess("test").startEvent().endEvent().done();
     Deployment deployment = engineRule.getRepositoryService().createDeployment().addModelInstance("test.bpmn20.xml", test).deploy();
@@ -62,6 +65,57 @@ public class PurgeDatabaseTest {
     assertEquals(1, (int) databasePurgeReport.getReportValue("ACT_GE_BYTEARRAY"));
     assertEquals(1, (int) databasePurgeReport.getReportValue("ACT_RE_DEPLOYMENT"));
     assertEquals(1, (int) databasePurgeReport.getReportValue("ACT_HI_PROCINST"));
+
+    //and db and cache should be cleaned
+    assertEquals(0, engineRule.getRepositoryService().createProcessDefinitionQuery().count());
+    assertEquals(0, engineRule.getHistoryService().createHistoricActivityInstanceQuery().count());
+    assertEquals(0, engineRule.getRepositoryService().createDeploymentQuery().count());
+
+    assertTrue(engineRule.getProcessEngineConfiguration().getDeploymentCache().getProcessDefinitionCache().isEmpty());
+  }
+
+
+
+
+  @Test
+  public void testPurgeWithExistingProcessInstance() {
+    //given process with variable and staying process instance in second user task
+    BpmnModelInstance test = Bpmn.createExecutableProcess("test")
+                                 .startEvent()
+                                 .userTask()
+                                 .userTask()
+                                 .endEvent()
+                                 .done();
+    Deployment deployment = engineRule.getRepositoryService().createDeployment().addModelInstance("test.bpmn20.xml", test).deploy();
+    engineRule.manageDeployment(deployment);
+
+    VariableMap variables = Variables.createVariables();
+    variables.put("key", "value");
+    engineRule.getRuntimeService().startProcessInstanceByKey("test", variables);
+    Task task = engineRule.getTaskService().createTaskQuery().singleResult();
+    engineRule.getTaskService().complete(task.getId());
+
+    //when purge is executed
+    ManagementServiceImpl managementService = (ManagementServiceImpl) engineRule.getManagementService();
+    PurgeReport purge = managementService.purge();
+
+    //then purge report should contain the removed process def etc and also the execution and task entity
+    assertFalse(purge.isEmpty());
+    CachePurgeResult cachePurgeResult = purge.getCachePurgeResult();
+    assertEquals(1, cachePurgeResult.getReportValue(CachePurgeResult.PROCESS_DEF_CACHE).size());
+
+    DatabasePurgeReport databasePurgeReport = purge.getDatabasePurgeReport();
+    assertEquals(1, (int) databasePurgeReport.getReportValue("ACT_RU_VARIABLE"));
+    assertEquals(1, (int) databasePurgeReport.getReportValue("ACT_RU_TASK"));
+    assertEquals(1, (int) databasePurgeReport.getReportValue("ACT_GE_BYTEARRAY"));
+    assertEquals(1, (int) databasePurgeReport.getReportValue("ACT_RE_DEPLOYMENT"));
+    assertEquals(1, (int) databasePurgeReport.getReportValue("ACT_RE_PROCDEF"));
+    assertEquals(1, (int) databasePurgeReport.getReportValue("ACT_HI_VARINST"));
+    assertEquals(2, (int) databasePurgeReport.getReportValue("ACT_HI_TASKINST"));
+    assertEquals(3, (int) databasePurgeReport.getReportValue("ACT_HI_ACTINST"));
+    assertEquals(1, (int) databasePurgeReport.getReportValue("ACT_HI_PROCINST"));
+    assertEquals(1, (int) databasePurgeReport.getReportValue("ACT_RU_EXECUTION"));
+    assertEquals(1, (int) databasePurgeReport.getReportValue("ACT_HI_DETAIL"));
 
     //and db and cache should be cleaned
     assertEquals(0, engineRule.getRepositoryService().createProcessDefinitionQuery().count());
